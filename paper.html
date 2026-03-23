@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ひらがな — Treino de Escrita</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1410;
+  --paper: #f5f0e8;
+  --red: #c0392b;
+  --red-light: #e74c3c;
+  --gold: #b8860b;
+  --muted: #8a7f72;
+  --dim: #ccc5b5;
+  --surface: #ede8de;
+  --green: #2e7d32;
+  --green-light: #4caf50;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: #0d0b08; color: white; font-family: 'Crimson Pro', serif; }
+
+/* ===== HOME ===== */
+#screen-home {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: #0d0b08;
+}
+
+.home-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: clamp(2rem, 6vw, 4rem);
+  color: #fff;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+.home-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  color: rgba(255,255,255,0.28);
+  text-transform: uppercase;
+  margin-bottom: 48px;
+}
+.divider-line {
+  width: 80px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin-bottom: 48px;
+}
+
+.quiz-cards {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.quiz-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  padding: 32px 36px;
+  width: 280px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+.quiz-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(184,134,11,0.06) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.22s;
+}
+.quiz-card:hover {
+  border-color: rgba(184,134,11,0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+.quiz-card:hover::before { opacity: 1; }
+.quiz-card:active { transform: translateY(0); }
+
+.card-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.48rem;
+  letter-spacing: 0.3em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.card-jp {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 2.8rem;
+  color: white;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.card-desc {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.5;
+}
+.card-arrow {
+  position: absolute;
+  bottom: 16px; right: 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.quiz-card:hover .card-arrow { opacity: 1; transform: translateX(3px); }
+
+/* ===== OVERLAY BASE ===== */
+.quiz-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: #0d0b08;
+  z-index: 100;
+  flex-direction: column;
+}
+.quiz-overlay.active { display: flex; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ===== TOP BAR ===== */
+.topbar {
+  flex-shrink: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.topbar-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+}
+.topbar-progress {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.3);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tb-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 2px;
+  background: none;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: all 0.16s;
+}
+.tb-btn:hover { color: white; border-color: rgba(255,255,255,0.4); }
+.tb-btn.active { border-color: var(--gold); color: var(--gold); }
+
+/* ===== MAIN AREA ===== */
+.quiz-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+}
+
+/* ===== QUIZ 1: KANA → PAPEL ===== */
+.kana-big {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: clamp(10rem, 28vw, 22rem);
+  color: white;
+  line-height: 1;
+  user-select: none;
+  animation: kanaIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes kanaIn {
+  from { opacity: 0; transform: scale(0.82); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.romaji-reveal {
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(1.2rem, 3vw, 2.2rem);
+  letter-spacing: 0.22em;
+  color: rgba(255,255,255,0.55);
+  margin-top: 12px;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.variant-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.vtag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 3px;
+  background: rgba(255,255,255,0.03);
+  animation: tagIn 0.35s ease forwards;
+  opacity: 0;
+}
+@keyframes tagIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.vtag .vt-kana {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 1.5rem;
+  color: rgba(255,255,255,0.75);
+}
+.vtag .vt-roma {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.3);
+}
+.vtag.daku-tag { border-color: rgba(184,134,11,0.2); }
+.vtag.daku-tag .vt-kana { color: var(--gold); }
+
+/* Timer ring */
+.timer-wrap {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.timer-wrap.active { opacity: 1; }
+.timer-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+.timer-ring svg { transform: rotate(-90deg); }
+.timer-ring circle.bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 3; }
+.timer-ring circle.fg {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 188.5;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear, stroke 0.3s;
+}
+.timer-ring circle.fg.urgent { stroke: var(--red-light); }
+.timer-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 1.1rem;
+  color: white;
+}
+.timer-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.45rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+}
+
+/* Timer settings bar */
+.timer-settings {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.timer-settings label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+}
+.timer-input {
+  width: 52px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 2px;
+  color: white;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 3px 6px;
+  outline: none;
+}
+.timer-input:focus { border-color: var(--gold); }
+
+/* ===== QUIZ 2: ROMAJI → KANA ===== */
+.romaji-big {
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(3rem, 10vw, 8rem);
+  letter-spacing: 0.18em;
+  color: white;
+  user-select: none;
+  animation: kanaIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.kana-answer {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: clamp(8rem, 22vw, 18rem);
+  color: white;
+  line-height: 1;
+  margin-top: 12px;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.35s cubic-bezier(0.34,1.56,0.64,1), transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.kana-answer.no-transition {
+  transition: none !important;
+}
+.kana-answer.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ===== BOTTOM BAR ===== */
+.bottombar {
+  flex-shrink: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.hint-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.hint-item {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.14);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.kbd {
+  border: 1px solid currentColor;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+.counter-row {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.18);
+}
+
+/* ===== ORDER INDICATOR ===== */
+.order-dots {
+  display: flex;
+  gap: 5px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 400px;
+}
+.odot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  transition: background 0.2s;
+}
+.odot.done { background: var(--green-light); }
+.odot.current { background: var(--gold); transform: scale(1.4); }
+
+/* ===== "PRESS SPACE" HINT ===== */
+.space-hint {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.12);
+  margin-top: 28px;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Section label during order display */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.48rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+  margin-bottom: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="screen-home">
+  <div class="home-title">ひらがな</div>
+  <div class="home-sub">Treino de Escrita</div>
+  <div class="divider-line"></div>
+  <div class="quiz-cards">
+
+    <div class="quiz-card" onclick="startQuiz1()">
+      <div class="card-num">Quiz 01</div>
+      <div class="card-jp">あ</div>
+      <div class="card-title">Kana → Papel</div>
+      <div class="card-desc">O hiragana aparece na tela. Você escreve no caderno. Em ordem, com todas as variações.</div>
+      <div class="card-arrow">→</div>
+    </div>
+
+    <div class="quiz-card" onclick="startQuiz2()">
+      <div class="card-num">Quiz 02</div>
+      <div class="card-jp" style="font-family:'DM Mono',monospace; font-size:1.8rem; letter-spacing:0.1em; color:rgba(255,255,255,0.8);">ro·ma·ji</div>
+      <div class="card-title">Romaji → Kana</div>
+      <div class="card-desc">O romaji aparece na tela. Você escreve o hiragana no caderno. Ordem aleatória.</div>
+      <div class="card-arrow">→</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- QUIZ 1: KANA → PAPEL (em ordem) -->
+<div class="quiz-overlay" id="screen-q1">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-tag">Kana → Papel</span>
+      <span class="topbar-progress" id="q1-progress">1 / 46</span>
+    </div>
+    <div class="topbar-right">
+      <div class="timer-settings">
+        <label>Tempo (s)</label>
+        <input type="number" class="timer-input" id="timerSec" value="10" min="3" max="60">
+        <button class="tb-btn" id="timerToggle" onclick="toggleTimer()">⏱ Timer: OFF</button>
+      </div>
+      <button class="tb-btn" onclick="closeQ1()">✕ Fechar</button>
+    </div>
+  </div>
+
+  <div class="quiz-main" id="q1-main">
+    <div class="section-label" id="q1-section-label"></div>
+    <div class="kana-big" id="q1-kana">あ</div>
+    <div class="romaji-reveal" id="q1-romaji">a</div>
+    <div class="variant-tags" id="q1-variants"></div>
+    <div class="order-dots" id="q1-dots"></div>
+    <div class="space-hint" id="q1-spacehint">ESPAÇO → próximo</div>
+
+    <div class="timer-wrap" id="timerWrap">
+      <div class="timer-ring">
+        <svg viewBox="0 0 64 64" width="64" height="64">
+          <circle class="bg" cx="32" cy="32" r="30"/>
+          <circle class="fg" id="timerCircle" cx="32" cy="32" r="30"/>
+        </svg>
+        <div class="timer-num" id="timerNum">10</div>
+      </div>
+      <div class="timer-label">segundos</div>
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <div class="hint-row">
+      <div class="hint-item"><span class="kbd">espaço</span> próximo</div>
+      <div class="hint-item"><span class="kbd">←</span> voltar</div>
+      <div class="hint-item"><span class="kbd">T</span> iniciar timer</div>
+    </div>
+    <div class="counter-row" id="q1-counter">0 de 46 vistos</div>
+  </div>
+</div>
+
+<!-- QUIZ 2: ROMAJI → KANA (aleatório) -->
+<div class="quiz-overlay" id="screen-q2">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-tag">Romaji → Kana</span>
+      <span class="topbar-progress" id="q2-progress">1 / —</span>
+    </div>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="closeQ2()">✕ Fechar</button>
+    </div>
+  </div>
+
+  <div class="quiz-main">
+    <div class="romaji-big" id="q2-romaji">a</div>
+    <div class="kana-answer" id="q2-kana">あ</div>
+    <div class="space-hint" id="q2-spacehint">ESPAÇO → revelar kana</div>
+  </div>
+
+  <div class="bottombar">
+    <div class="hint-row">
+      <div class="hint-item"><span class="kbd">espaço</span> revelar / próximo</div>
+      <div class="hint-item"><span class="kbd">←</span> voltar</div>
+    </div>
+    <div class="counter-row" id="q2-counter">0 vistos</div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+// Each "group" has a base set and optionally daku / handaku variants
+const ALL_GROUPS = [
+  {
+    section: 'あ行', id: 'a',
+    base: [
+      {k:'あ',r:'a'},{k:'い',r:'i'},{k:'う',r:'u'},{k:'え',r:'e'},{k:'お',r:'o'}
+    ]
+  },
+  {
+    section: 'か行', id: 'ka',
+    base: [
+      {k:'か',r:'ka'},{k:'き',r:'ki'},{k:'く',r:'ku'},{k:'け',r:'ke'},{k:'こ',r:'ko'}
+    ],
+    daku: [
+      {k:'が',r:'ga'},{k:'ぎ',r:'gi'},{k:'ぐ',r:'gu'},{k:'げ',r:'ge'},{k:'ご',r:'go'}
+    ]
+  },
+  {
+    section: 'さ行', id: 'sa',
+    base: [
+      {k:'さ',r:'sa'},{k:'し',r:'shi'},{k:'す',r:'su'},{k:'せ',r:'se'},{k:'そ',r:'so'}
+    ],
+    daku: [
+      {k:'ざ',r:'za'},{k:'じ',r:'ji'},{k:'ず',r:'zu'},{k:'ぜ',r:'ze'},{k:'ぞ',r:'zo'}
+    ]
+  },
+  {
+    section: 'た行', id: 'ta',
+    base: [
+      {k:'た',r:'ta'},{k:'ち',r:'chi'},{k:'つ',r:'tsu'},{k:'て',r:'te'},{k:'と',r:'to'}
+    ],
+    daku: [
+      {k:'だ',r:'da'},{k:'ぢ',r:'di'},{k:'づ',r:'du'},{k:'で',r:'de'},{k:'ど',r:'do'}
+    ]
+  },
+  {
+    section: 'な行', id: 'na',
+    base: [
+      {k:'な',r:'na'},{k:'に',r:'ni'},{k:'ぬ',r:'nu'},{k:'ね',r:'ne'},{k:'の',r:'no'}
+    ]
+  },
+  {
+    section: 'は行', id: 'ha',
+    base: [
+      {k:'は',r:'ha'},{k:'ひ',r:'hi'},{k:'ふ',r:'fu'},{k:'へ',r:'he'},{k:'ほ',r:'ho'}
+    ],
+    daku: [
+      {k:'ば',r:'ba'},{k:'び',r:'bi'},{k:'ぶ',r:'bu'},{k:'べ',r:'be'},{k:'ぼ',r:'bo'}
+    ],
+    handaku: [
+      {k:'ぱ',r:'pa'},{k:'ぴ',r:'pi'},{k:'ぷ',r:'pu'},{k:'ぺ',r:'pe'},{k:'ぽ',r:'po'}
+    ]
+  },
+  {
+    section: 'ま行', id: 'ma',
+    base: [
+      {k:'ま',r:'ma'},{k:'み',r:'mi'},{k:'む',r:'mu'},{k:'め',r:'me'},{k:'も',r:'mo'}
+    ]
+  },
+  {
+    section: 'や行', id: 'ya',
+    base: [
+      {k:'や',r:'ya'},{k:'ゆ',r:'yu'},{k:'よ',r:'yo'}
+    ]
+  },
+  {
+    section: 'ら行', id: 'ra',
+    base: [
+      {k:'ら',r:'ra'},{k:'り',r:'ri'},{k:'る',r:'ru'},{k:'れ',r:'re'},{k:'ろ',r:'ro'}
+    ]
+  },
+  {
+    section: 'わ行・ん', id: 'wa',
+    base: [
+      {k:'わ',r:'wa'},{k:'を',r:'wo'},{k:'ん',r:'n'}
+    ]
+  },
+];
+
+// Build flat ordered list for Quiz 1:
+// For each group: show each base kana with its variants listed beside it
+function buildQ1List() {
+  const list = [];
+  ALL_GROUPS.forEach(group => {
+    group.base.forEach((item, i) => {
+      const vowel = ['a','i','u','e','o'][i] || '';
+      const variants = [];
+      if (group.daku && group.daku[i]) {
+        variants.push({ ...group.daku[i], type: 'daku' });
+      }
+      if (group.handaku && group.handaku[i]) {
+        variants.push({ ...group.handaku[i], type: 'handaku' });
+      }
+      list.push({
+        k: item.k,
+        r: item.r,
+        section: group.section,
+        variants: variants,
+        groupId: group.id
+      });
+    });
+  });
+  return list;
+}
+
+// Build flat list for Quiz 2 (all kana including daku/handaku)
+function buildQ2List() {
+  const list = [];
+  ALL_GROUPS.forEach(group => {
+    group.base.forEach(item => list.push({ k: item.k, r: item.r }));
+    if (group.daku) group.daku.forEach(item => list.push({ k: item.k, r: item.r }));
+    if (group.handaku) group.handaku.forEach(item => list.push({ k: item.k, r: item.r }));
+  });
+  return list;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ============================================================
+// QUIZ 1: Kana em ordem
+// ============================================================
+let q1List = [];
+let q1Idx = 0;
+let q1Seen = 0;
+
+// Timer state
+let timerEnabled = false;
+let timerInterval = null;
+let timerRemaining = 0;
+
+function startQuiz1() {
+  q1List = buildQ1List();
+  q1Idx = 0;
+  q1Seen = 0;
+  document.getElementById('screen-q1').classList.add('active');
+  buildDots();
+  loadQ1();
+}
+
+function buildDots() {
+  const container = document.getElementById('q1-dots');
+  container.innerHTML = '';
+  q1List.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'odot' + (i === 0 ? ' current' : '');
+    container.appendChild(d);
+  });
+}
+
+function updateDots() {
+  const dots = document.querySelectorAll('#q1-dots .odot');
+  dots.forEach((d, i) => {
+    d.className = 'odot';
+    if (i < q1Idx) d.classList.add('done');
+    else if (i === q1Idx) d.classList.add('current');
+  });
+}
+
+function loadQ1() {
+  stopTimer();
+  const item = q1List[q1Idx];
+  if (!item) return;
+
+  document.getElementById('q1-section-label').textContent = item.section;
+  document.getElementById('q1-kana').textContent = item.k;
+  document.getElementById('q1-romaji').textContent = item.r;
+
+  // Trigger re-animation
+  const el = document.getElementById('q1-kana');
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = '';
+
+  // Variants
+  const vtContainer = document.getElementById('q1-variants');
+  vtContainer.innerHTML = '';
+  item.variants.forEach((v, i) => {
+    const tag = document.createElement('div');
+    tag.className = 'vtag' + (v.type === 'daku' || v.type === 'handaku' ? ' daku-tag' : '');
+    tag.style.animationDelay = (i * 80) + 'ms';
+    tag.innerHTML = `<span class="vt-kana">${v.k}</span><span class="vt-roma">${v.r}</span>`;
+    vtContainer.appendChild(tag);
+  });
+
+  // Progress
+  const total = q1List.length;
+  document.getElementById('q1-progress').textContent = `${q1Idx + 1} / ${total}`;
+  document.getElementById('q1-counter').textContent = `${q1Idx} de ${total} vistos`;
+  updateDots();
+
+  // Start timer if enabled
+  if (timerEnabled) startTimer();
+}
+
+function q1Next() {
+  q1Seen = Math.max(q1Seen, q1Idx + 1);
+  q1Idx++;
+  if (q1Idx >= q1List.length) q1Idx = 0;
+  loadQ1();
+}
+
+function q1Prev() {
+  q1Idx = Math.max(0, q1Idx - 1);
+  loadQ1();
+}
+
+function closeQ1() {
+  stopTimer();
+  document.getElementById('screen-q1').classList.remove('active');
+}
+
+// ====== TIMER ======
+function toggleTimer() {
+  timerEnabled = !timerEnabled;
+  const btn = document.getElementById('timerToggle');
+  btn.textContent = `⏱ Timer: ${timerEnabled ? 'ON' : 'OFF'}`;
+  btn.className = 'tb-btn' + (timerEnabled ? ' active' : '');
+  const wrap = document.getElementById('timerWrap');
+  if (timerEnabled) {
+    wrap.classList.add('active');
+    startTimer();
+  } else {
+    wrap.classList.remove('active');
+    stopTimer();
+  }
+}
+
+function getTimerSec() {
+  const val = parseInt(document.getElementById('timerSec').value) || 10;
+  return Math.max(3, Math.min(60, val));
+}
+
+function startTimer() {
+  if (!timerEnabled) return;
+  stopTimer();
+  timerRemaining = getTimerSec();
+  updateTimerUI(timerRemaining, getTimerSec());
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    updateTimerUI(timerRemaining, getTimerSec());
+    if (timerRemaining <= 0) {
+      stopTimer();
+      // Flash and auto-advance
+      document.getElementById('q1-kana').style.filter = 'brightness(0.4)';
+      setTimeout(() => {
+        document.getElementById('q1-kana').style.filter = '';
+        q1Next();
+      }, 320);
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function updateTimerUI(remaining, total) {
+  const num = document.getElementById('timerNum');
+  const circle = document.getElementById('timerCircle');
+  const CIRC = 188.5; // 2π × 30
+  const pct = remaining / total;
+  const offset = CIRC * (1 - pct);
+  num.textContent = remaining;
+  circle.style.strokeDashoffset = offset;
+  circle.classList.toggle('urgent', remaining <= 3);
+}
+
+// ============================================================
+// QUIZ 2: Romaji → Kana
+// ============================================================
+let q2List = [];
+let q2Idx = 0;
+let q2Revealed = false;
+let q2Total = 0;
+
+function startQuiz2() {
+  const flat = buildQ2List();
+  q2List = shuffle(flat);
+  q2Idx = 0;
+  q2Revealed = false;
+  q2Total = 0;
+  document.getElementById('screen-q2').classList.add('active');
+  loadQ2();
+}
+
+function loadQ2() {
+  const item = q2List[q2Idx];
+  if (!item) return;
+
+  // Instantly hide kana (no transition) before swapping content
+  const kEl = document.getElementById('q2-kana');
+  kEl.classList.add('no-transition');
+  kEl.classList.remove('revealed');
+  kEl.textContent = item.k;
+  // Force reflow so the hidden state is painted, then re-enable transition
+  void kEl.offsetWidth;
+  kEl.classList.remove('no-transition');
+
+  // Romaji
+  const rEl = document.getElementById('q2-romaji');
+  rEl.textContent = item.r;
+  rEl.style.animation = 'none';
+  void rEl.offsetWidth;
+  rEl.style.animation = '';
+
+  q2Revealed = false;
+
+  document.getElementById('q2-spacehint').textContent = 'ESPAÇO → revelar kana';
+  document.getElementById('q2-progress').textContent = `${q2Idx + 1} / ${q2List.length}`;
+  document.getElementById('q2-counter').textContent = `${q2Total} revelados`;
+}
+
+function revealQ2() {
+  if (q2Revealed) return;
+  q2Revealed = true;
+  document.getElementById('q2-kana').classList.add('revealed');
+  document.getElementById('q2-spacehint').textContent = 'ESPAÇO → próximo';
+  q2Total++;
+  document.getElementById('q2-counter').textContent = `${q2Total} revelados`;
+}
+
+function q2Next() {
+  if (!q2Revealed) { revealQ2(); return; }
+  // Hide kana immediately before advancing so it doesn't flash on next item
+  const kEl = document.getElementById('q2-kana');
+  kEl.classList.remove('revealed');
+  kEl.textContent = '';
+  q2Idx++;
+  if (q2Idx >= q2List.length) {
+    q2List = shuffle(q2List);
+    q2Idx = 0;
+  }
+  loadQ2();
+}
+
+function q2Prev() {
+  q2Idx = Math.max(0, q2Idx - 1);
+  document.getElementById('q2-kana').classList.remove('revealed');
+  q2Revealed = false;
+  loadQ2();
+}
+
+function closeQ2() {
+  document.getElementById('screen-q2').classList.remove('active');
+}
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown', e => {
+  const q1 = document.getElementById('screen-q1').classList.contains('active');
+  const q2 = document.getElementById('screen-q2').classList.contains('active');
+
+  if (e.key === 'Escape') {
+    if (q1) closeQ1();
+    if (q2) closeQ2();
+    return;
+  }
+
+  if (q1) {
+    if (e.key === ' ') { e.preventDefault(); q1Next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); q1Prev(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); q1Next(); }
+    if (e.key === 't' || e.key === 'T') toggleTimer();
+  }
+
+  if (q2) {
+    if (e.key === ' ') { e.preventDefault(); q2Next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); q2Prev(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); q2Next(); }
+  }
+});
+</script>
+</body>
+</html>
