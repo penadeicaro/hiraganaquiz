@@ -336,6 +336,36 @@ html, body { height: 100%; overflow: hidden; background: #0d0b08; color: white; 
 }
 .timer-input:focus { border-color: var(--gold); }
 
+/* ===== QUIZ 2: AUDIO PLAY BUTTON ===== */
+.play-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 20px;
+  transition: transform 0.15s;
+  outline: none;
+}
+.play-btn:hover { transform: scale(1.08); }
+.play-btn:active { transform: scale(0.95); }
+.play-btn svg circle { transition: stroke 0.2s; }
+.play-btn:hover svg circle { stroke: rgba(184,134,11,0.5); }
+.play-btn.playing svg circle { stroke: var(--gold); }
+.play-btn.playing svg polygon { fill: var(--gold); opacity: 1; }
+.play-btn-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.46rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+}
+
+/* Sound wave animation on play button when playing */
+.play-btn.playing .play-btn-label { color: var(--gold); }
+
 /* ===== QUIZ 2: ROMAJI → KANA ===== */
 .romaji-big {
   font-family: 'DM Mono', monospace;
@@ -465,9 +495,9 @@ html, body { height: 100%; overflow: hidden; background: #0d0b08; color: white; 
 
     <div class="quiz-card" onclick="startQuiz2()">
       <div class="card-num">Quiz 02</div>
-      <div class="card-jp" style="font-family:'DM Mono',monospace; font-size:1.8rem; letter-spacing:0.1em; color:rgba(255,255,255,0.8);">ro·ma·ji</div>
-      <div class="card-title">Romaji → Kana</div>
-      <div class="card-desc">O romaji aparece na tela. Você escreve o hiragana no caderno. Ordem aleatória.</div>
+      <div class="card-jp" style="font-size:2.8rem;">♪</div>
+      <div class="card-title">Áudio → Kana</div>
+      <div class="card-desc">O som toca automaticamente. Escreva o hiragana no caderno e pressione espaço para revelar.</div>
       <div class="card-arrow">→</div>
     </div>
 
@@ -525,7 +555,7 @@ html, body { height: 100%; overflow: hidden; background: #0d0b08; color: white; 
 <div class="quiz-overlay" id="screen-q2">
   <div class="topbar">
     <div class="topbar-left">
-      <span class="topbar-tag">Romaji → Kana</span>
+      <span class="topbar-tag">Áudio → Kana</span>
       <span class="topbar-progress" id="q2-progress">1 / —</span>
     </div>
     <div class="topbar-right">
@@ -534,7 +564,13 @@ html, body { height: 100%; overflow: hidden; background: #0d0b08; color: white; 
   </div>
 
   <div class="quiz-main">
-    <div class="romaji-big" id="q2-romaji">a</div>
+    <button class="play-btn" id="q2-playbtn" onclick="playQ2Sound()">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="18" r="17" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+        <polygon points="14,11 28,18 14,25" fill="white" opacity="0.85"/>
+      </svg>
+      <span class="play-btn-label">ouvir novamente</span>
+    </button>
     <div class="kana-answer" id="q2-kana">あ</div>
     <div class="space-hint" id="q2-spacehint">ESPAÇO → revelar kana</div>
   </div>
@@ -542,6 +578,7 @@ html, body { height: 100%; overflow: hidden; background: #0d0b08; color: white; 
   <div class="bottombar">
     <div class="hint-row">
       <div class="hint-item"><span class="kbd">espaço</span> revelar / próximo</div>
+      <div class="hint-item"><span class="kbd">R</span> repetir som</div>
       <div class="hint-item"><span class="kbd">←</span> voltar</div>
     </div>
     <div class="counter-row" id="q2-counter">0 vistos</div>
@@ -668,6 +705,36 @@ function buildQ2List() {
   return list;
 }
 
+// ============================================================
+// AUDIO
+// ============================================================
+const AUDIO_MAP = {
+  'a':'a','i':'i','u':'u','e':'e','o':'o',
+  'ka':'ka','ki':'ki','ku':'ku','ke':'ke','ko':'ko',
+  'ga':'ga','gi':'gi','gu':'gu','ge':'ge','go':'go',
+  'sa':'sa','shi':'shi','su':'su','se':'se','so':'so',
+  'za':'za','ji':'ji','zu':'zu','ze':'ze','zo':'zo',
+  'ta':'ta','chi':'chi','tsu':'tsu','te':'te','to':'to',
+  'da':'da','di':'di','du':'dzu','de':'de','do':'do',
+  'na':'na','ni':'ni','nu':'nu','ne':'ne','no':'no',
+  'ha':'ha','hi':'hi','fu':'hu','he':'he','ho':'ho',
+  'ba':'ba','bi':'bi','bu':'bu','be':'be','bo':'bo',
+  'pa':'pa','pi':'pi','pu':'pu','pe':'pe','po':'po',
+  'ma':'ma','mi':'mi','mu':'mu','me':'me','mo':'mo',
+  'ya':'ya','yu':'yu','yo':'yo',
+  'ra':'ra','ri':'ri','ru':'ru','re':'re','ro':'ro',
+  'wa':'wa','wo':'wo','n':'N',
+};
+
+let currentAudio = null;
+function playSound(romaji) {
+  const file = AUDIO_MAP[romaji];
+  if (!file) return;
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+  currentAudio = new Audio(`sons/${file}.mp3`);
+  currentAudio.play().catch(() => {});
+}
+
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -748,6 +815,9 @@ function loadQ1() {
   document.getElementById('q1-progress').textContent = `${q1Idx + 1} / ${total}`;
   document.getElementById('q1-counter').textContent = `${q1Idx} de ${total} vistos`;
   updateDots();
+
+  // Play audio
+  playSound(item.r);
 
   // Start timer if enabled
   if (timerEnabled) startTimer();
@@ -844,6 +914,15 @@ function startQuiz2() {
   loadQ2();
 }
 
+function playQ2Sound() {
+  const item = q2List[q2Idx];
+  if (!item) return;
+  const btn = document.getElementById('q2-playbtn');
+  btn.classList.add('playing');
+  playSound(item.r);
+  setTimeout(() => btn.classList.remove('playing'), 700);
+}
+
 function loadQ2() {
   const item = q2List[q2Idx];
   if (!item) return;
@@ -857,18 +936,14 @@ function loadQ2() {
   void kEl.offsetWidth;
   kEl.classList.remove('no-transition');
 
-  // Romaji
-  const rEl = document.getElementById('q2-romaji');
-  rEl.textContent = item.r;
-  rEl.style.animation = 'none';
-  void rEl.offsetWidth;
-  rEl.style.animation = '';
-
   q2Revealed = false;
 
   document.getElementById('q2-spacehint').textContent = 'ESPAÇO → revelar kana';
   document.getElementById('q2-progress').textContent = `${q2Idx + 1} / ${q2List.length}`;
   document.getElementById('q2-counter').textContent = `${q2Total} revelados`;
+
+  // Auto-play sound after a brief pause
+  setTimeout(() => playQ2Sound(), 180);
 }
 
 function revealQ2() {
@@ -878,6 +953,8 @@ function revealQ2() {
   document.getElementById('q2-spacehint').textContent = 'ESPAÇO → próximo';
   q2Total++;
   document.getElementById('q2-counter').textContent = `${q2Total} revelados`;
+  // Play sound again on reveal so user can confirm
+  playQ2Sound();
 }
 
 function q2Next() {
@@ -929,6 +1006,7 @@ document.addEventListener('keydown', e => {
     if (e.key === ' ') { e.preventDefault(); q2Next(); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); q2Prev(); }
     if (e.key === 'ArrowRight') { e.preventDefault(); q2Next(); }
+    if (e.key === 'r' || e.key === 'R') playQ2Sound();
   }
 });
 </script>
